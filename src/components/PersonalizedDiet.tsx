@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { generatePersonalizedDiet, DietPlan } from "@/src/services/gemini";
+import { db, auth, handleFirestoreError, OperationType } from "@/src/firebase";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +20,32 @@ export function PersonalizedDiet() {
   });
   const [loading, setLoading] = useState(false);
   const [dietPlan, setDietPlan] = useState<DietPlan | null>(null);
+
+  const user = auth.currentUser;
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchProfile = async () => {
+      try {
+        const docRef = doc(db, "users", user.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setFormData({
+            weight: data.weight?.toString() || "",
+            height: data.height?.toString() || "",
+            age: data.age?.toString() || "",
+            gender: data.gender || "male",
+            activityLevel: data.activityLevel || "1.2",
+            goal: data.goal || "maintenance"
+          });
+        }
+      } catch (err) {
+        console.error("Erro ao carregar perfil:", err);
+      }
+    };
+    fetchProfile();
+  }, [user]);
 
   const calculateTDEE = () => {
     const w = parseFloat(formData.weight);
@@ -52,6 +80,22 @@ export function PersonalizedDiet() {
         formData.goal
       );
       setDietPlan(plan);
+
+      // Save to Firestore if logged in
+      if (user) {
+        await setDoc(doc(db, "users", user.uid), {
+          uid: user.uid,
+          email: user.email,
+          name: user.displayName,
+          weight: parseFloat(formData.weight),
+          height: parseFloat(formData.height),
+          age: parseFloat(formData.age),
+          gender: formData.gender,
+          activityLevel: formData.activityLevel,
+          goal: formData.goal,
+          updatedAt: new Date().toISOString()
+        });
+      }
     } catch (error) {
       console.error("Erro ao gerar dieta:", error);
     } finally {

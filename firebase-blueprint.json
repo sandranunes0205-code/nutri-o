@@ -1,0 +1,63 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Dados do perfil do usuário e configurações nutricionais.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "weight": { "type": "number" },
+        "height": { "type": "number" },
+        "age": { "type": "number" },
+        "gender": { "type": "string" },
+        "activityLevel": { "type": "string" },
+        "goal": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email"]
+    },
+    "DailyLog": {
+      "title": "DailyLog",
+      "description": "Registro diário de alimentação, adesão e bem-estar.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "adherence": { "type": "boolean" },
+        "foodItems": { "type": "array", "items": { "type": "string" } },
+        "waterIntake": { "type": "number" },
+        "wellBeing": { "type": "string" },
+        "caloriesConsumed": { "type": "number" }
+      },
+      "required": ["uid", "date", "adherence"]
+    },
+    "ProgressEntry": {
+      "title": "ProgressEntry",
+      "description": "Registro de evolução de peso e medidas.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "weight": { "type": "number" },
+        "notes": { "type": "string" }
+      },
+      "required": ["uid", "date", "weight"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Perfis de usuário."
+    },
+    "/logs/{logId}": {
+      "schema": "DailyLog",
+      "description": "Logs diários de nutrição."
+    },
+    "/progress/{progressId}": {
+      "schema": "ProgressEntry",
+      "description": "Entradas de progresso físico."
+    }
+  }
+}

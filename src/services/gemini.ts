@@ -71,6 +71,33 @@ export async function getHealthyRecipes(): Promise<Recipe[]> {
   return JSON.parse(response.text || "[]");
 }
 
+export async function getHealthyDesserts(): Promise<Recipe[]> {
+  const response = await ai.models.generateContent({
+    model: "gemini-3-flash-preview",
+    contents: "Sugira 3 sobremesas saudáveis, doces naturais ou opções com frutas que sejam nutritivas e baixas em açúcar processado.",
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.ARRAY,
+        items: {
+          type: Type.OBJECT,
+          properties: {
+            title: { type: Type.STRING },
+            ingredients: { type: Type.ARRAY, items: { type: Type.STRING } },
+            instructions: { type: Type.ARRAY, items: { type: Type.STRING } },
+            calories: { type: Type.NUMBER },
+            time: { type: Type.STRING },
+            difficulty: { type: Type.STRING, enum: ["Fácil", "Médio", "Difícil"] },
+          },
+          required: ["title", "ingredients", "instructions", "calories", "time", "difficulty"],
+        },
+      },
+    },
+  });
+
+  return JSON.parse(response.text || "[]");
+}
+
 export interface DietPlan {
   dailyCalories: number;
   macros: {
